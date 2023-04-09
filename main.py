@@ -1,5 +1,6 @@
 import cv2 as cv
 import numpy as np
+import pyttsx3
 
 def textGenerator(text,frame,cascade) :
     for(x,y,w,h) in cascade:
@@ -10,16 +11,18 @@ def textGenerator(text,frame,cascade) :
             textPt=(x+2,y+10)
             textFont=cv.FONT_HERSHEY_SIMPLEX
             textColor=(255,255,255)
-            boxPt1=(x,y)
-            boxPt2=(x+w//2,y+h//7)
             cv.putText(frame,text,textPt,textFont,0.5,textColor,thickness=2)
 
-capture=cv.VideoCapture("explosive1.mp4")
-guns_cascade=cv.CascadeClassifier("guns_cascade.xml")
-knives_cascade=cv.CascadeClassifier("knives_cascade.xml")
-explsvs_cascade=cv.CascadeClassifier("explsvs_cascade.xml")
+capture=cv.VideoCapture("explosive2.mp4")
+guns_cascade=cv.CascadeClassifier("XML_files\guns_cascade.xml")
+knives_cascade=cv.CascadeClassifier("XML_files\knives_cascade.xml")
+explsvs_cascade=cv.CascadeClassifier("XML_files\explsvs_cascade.xml")
 
 while True:
+
+    #initiallizing the speech engine
+    engine = pyttsx3.init()
+    #reading frames from video
     isTrue,frame=capture.read()
     #resizing the frame
     resized=cv.resize(frame,(500,500))
@@ -28,9 +31,9 @@ while True:
     gun_detected=False
     knife_detected=False
     explsvs_detected=False
-    gun_detect=guns_cascade.detectMultiScale(gray,scaleFactor=1.1,minNeighbors=5)
-    knives_detect=knives_cascade.detectMultiScale(gray,scaleFactor=1.3,minNeighbors=7)
-    explsvs_detect=explsvs_cascade.detectMultiScale(gray,scaleFactor=1.5,minNeighbors=20)
+    gun_detect=guns_cascade.detectMultiScale(gray,scaleFactor=5,minNeighbors=3)
+    knives_detect=knives_cascade.detectMultiScale(gray,scaleFactor=1.1,minNeighbors=5)
+    explsvs_detect=explsvs_cascade.detectMultiScale(gray,scaleFactor=1.1,minNeighbors=50)
     if len(gun_detect) != 0 :
         gun_detected=True
     if gun_detected :
@@ -44,13 +47,12 @@ while True:
     if explsvs_detected:
         textGenerator("EXPLOSIVE", resized, explsvs_detect)
     cv.imshow("Weapon Detector",resized)
+    if gun_detected or knife_detected or explsvs_detected :
+        engine.say("Weapons Detected!")
+        engine.runAndWait()
     #Press q to exit window
-    if cv.waitKey(25) & 0xFF == ord('q') :
+    if cv.waitKey(20) & 0xFF == ord('q') :
         break
     
 capture.release()
 cv.destroyAllWindows()
-        
-
-
-
