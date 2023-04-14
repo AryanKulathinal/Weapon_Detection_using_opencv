@@ -6,7 +6,7 @@ Haar Cascade training is a machine learning technique used for object detection 
 
 Datasets of Three types of weapons were collected :
 1.Firearms(Guns,rifles,pistol,etc)
-2.Blades(Knives,Swords,Daggers,etc)
+2.Sharp Objects(Knives,Swords,Daggers,etc)
 3.Explosives(TNT Dynamite,Grenades,etc)
 
 The training was done using Cascade Trainer GUI.The output of the training was an xml file.
