@@ -47,7 +47,7 @@ def detect_weapon(capture):
         if len(knives_detect) != 0:
             knife_detected=True
         if knife_detected :
-            textGenerator("BLADE", resized, knives_detect)
+            textGenerator("SHARP OBJECT", resized, knives_detect)
         if len(explsvs_detect) != 0:
             explsvs_detected=True
         if explsvs_detected:
@@ -66,17 +66,16 @@ def detect_weapon(capture):
 root = tk.Tk()
 root.title("CCTV based weapon detection")
 root.geometry("500x300")
-image=Image.open("Back.jpeg")
-resized_image = image.resize((500, 300), Image.ANTIALIAS)
+image=Image.open("mega-creator (2).png")
+resized_image = image.resize((540, 330), Image.ANTIALIAS)
 bg_image = ImageTk.PhotoImage(resized_image)
 bg_label = tk.Label(root, image=bg_image)
 bg_label.place(relwidth=1, relheight=1)
-
-label = tk.Label(root, text="CCTV based weapon detection", font=("Arial Bold", 20), fg="white", bg="black")
-label.pack(pady=20)
 
 file_button = tk.Button(root, text="Select file", command=choose_file)
 file_button.pack(pady=10)
 camera_button = tk.Button(root, text="Open camera", command=open_camera)
 camera_button.pack(pady=10)
+file_button.place(x=220,y=150)
+camera_button.place(x=210,y=180)
 root.mainloop()
