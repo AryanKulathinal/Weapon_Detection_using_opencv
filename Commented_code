@@ -1,0 +1,154 @@
+# import necessary libraries
+import cv2 as cv
+import numpy as np
+import pyttsx3
+import tkinter as tk
+from tkinter import filedialog
+from PIL import ImageTk, Image
+
+# function to add text to the detected object in the video
+def textGenerator(text, frame, cascade):
+    
+    # loop through each object detected by the cascade classifier
+    for (x, y, w, h) in cascade:
+        
+        # define the coordinates of the bounding box around the object
+        rectPt1 = (x, y)
+        rectPt2 = (x + w, y + h)
+        
+        # define the color of the bounding box
+        rectcolor = (0, 0, 255)
+        
+        # draw the bounding box around the object
+        result = cv.rectangle(frame, rectPt1, rectPt2, rectcolor, thickness = 3)
+        
+        # define the location and font of the text to be added to the object
+        textPt = (x + 2, y + 10)
+        textFont = cv.FONT_HERSHEY_SIMPLEX
+        textColor = (255, 255, 255)
+        
+        # add the text to the object in the frame
+        cv.putText(frame, text, textPt, textFont, 0.5, textColor, thickness = 2)
+
+# function to choose a file using tkinter file dialog and start detection on that video file
+def choose_file():
+    
+    # open the tkinter file dialog and get the path of the selected file
+    file_path = filedialog.askopenfilename()
+    
+    # create a video capture object from the selected video file
+    capture = cv.VideoCapture(file_path)
+    
+    # start weapon detection on the selected video file
+    detect_weapon(capture)
+
+# function to start detection on the default camera
+def open_camera():
+    
+    # create a video capture object for the default camera
+    capture = cv.VideoCapture(0)
+    
+    # start weapon detection on the default camera
+    detect_weapon(capture)
+    
+# Define a function to detect weapons in the given video capture
+def detect_weapon(capture):
+    # Load trained cascade classifiers for guns, knives, and explosives
+    guns_cascade = cv.CascadeClassifier("XML_files\guns_cascade.xml")
+    knives_cascade = cv.CascadeClassifier("XML_files\knives_cascade.xml")
+    explsvs_cascade = cv.CascadeClassifier("XML_files\explsvs_cascade.xml")
+    
+    while True:
+        # Initialize pyttsx3 engine for text-to-speech output
+        engine = pyttsx3.init()
+        
+        # Read a frame from the video capture
+        isTrue,frame = capture.read()
+        
+        # Resize the frame to a smaller size for faster processing
+        resized = cv.resize(frame, (500,500))
+        
+        # Convert the resized frame to grayscale
+        gray = cv.cvtColor(resized, cv.COLOR_BGR2GRAY)
+        
+        # Initialize variables for detecting guns, knives, and explosives
+        gun_detected = False
+        knife_detected = False
+        explsvs_detected = False
+        
+        # Detect guns in the grayscale frame using the guns cascade classifier
+        gun_detect = guns_cascade.detectMultiScale(gray, scaleFactor=5, minNeighbors=3)
+        
+        # Detect knives in the grayscale frame using the knives cascade classifier
+        knives_detect = knives_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=7)
+        
+        # Detect explosives in the grayscale frame using the explosives cascade classifier
+        explsvs_detect = explsvs_cascade.detectMultiScale(gray, scaleFactor=1.5, minNeighbors=75)
+        
+        # Check if guns are detected in the frame
+        if len(gun_detect) != 0 :
+            gun_detected = True
+            
+        # If guns are detected, display "GUN" text on the frame using the textGenerator function
+        if gun_detected :
+            textGenerator("GUN",resized,gun_detect)
+        
+        # Check if knives are detected in the frame
+        if len(knives_detect) != 0:
+            knife_detected = True
+            
+        # If knives are detected, display "SHARP OBJECT" text on the frame using the textGenerator function
+        if knife_detected :
+            textGenerator("SHARP OBJECT", resized, knives_detect)
+        
+        # Check if explosives are detected in the frame
+        if len(explsvs_detect) != 0:
+            explsvs_detected = True
+            
+        # If explosives are detected, display "EXPLOSIVE" text on the frame using the textGenerator function
+        if explsvs_detected:
+            textGenerator("EXPLOSIVE", resized, explsvs_detect)
+        
+        # Display the resulting frame with detected objects
+        cv.imshow("Weapon Detector", resized)
+        
+        # If guns, knives, or explosives are detected, output "Weapons Detected!" using text-to-speech
+        if gun_detected or knife_detected or explsvs_detected :
+            engine.say("Weapons Detected!")
+            engine.runAndWait()
+        
+        # Wait for a key press, if it is 'q', break out of the loop and end the program
+        if cv.waitKey(20) & 0xFF == ord('q') :
+            break
+            
+    # Release the video capture and close all windows
+    capture.release()
+    cv.destroyAllWindows()
+
+# create tkinter window
+root = tk.Tk()
+root.title("CCTV based weapon detection")
+root.geometry("500x300")
+
+# open and resize background image
+image = Image.open("mega-creator (2).png")
+resized_image = image.resize((540, 330), Image.ANTIALIAS)
+bg_image = ImageTk.PhotoImage(resized_image)
+bg_label = tk.Label(root, image=bg_image)
+bg_label.place(relwidth=1, relheight=1)
+
+# create "Select file" button and bind to choose_file function
+file_button = tk.Button(root, text="Select file", command=choose_file)
+file_button.pack(pady=10)
+file_button.place(x=220, y=150)
+
+# create "Open camera" button and bind to open_camera function
+camera_button = tk.Button(root, text="Open camera", command=open_camera)
+camera_button.pack(pady=10)
+camera_button.place(x=210, y=180)
+
+# start the tkinter event loop
+root.mainloop()
+
+   
+   
